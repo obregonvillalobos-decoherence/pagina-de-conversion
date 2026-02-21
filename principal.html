@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decoherence | Medicina Estética & Metabólica de Precisión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --black-deep: #050505;
+            --black-glossy: #0a0a0a;
+            --black-light: #111111;
+            --accent-gold: #d4af37;
+            --accent-copper: #b87333;
+            --text-primary: #f5f5f5;
+            --text-secondary: #888888;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--black-deep);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            font-weight: 300;
+        }
+        
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+        
+        /* Fondo animado estocástico - Líneas de red neuronal */
+        .bg-stochastic {
+            background: var(--black-deep);
+            position: relative;
+        }
+        
+        #canvas-network {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.6;
+        }
+        
+        /* Efectos de luz sutiles */
+        .glow-sphere {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .glow-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 70%);
+            top: -10%;
+            right: -10%;
+            animation: drift 20s infinite ease-in-out;
+        }
+        
+        .glow-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(184,115,51,0.3) 0%, transparent 70%);
+            bottom: 10%;
+            left: -5%;
+            animation: drift 25s infinite ease-in-out reverse;
+        }
+        
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        
+        /* Chatbot - Estilo oscuro brilloso */
+        .chat-widget {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 1000;
+        }
+        
+        .chat-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8), 
+                        inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .chat-button::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.6), transparent, rgba(184,115,51,0.6));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .chat-button:hover::before {
+            opacity: 1;
+        }
+        
+        .chat-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(212,175,55,0.2),
+                        inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        
+        .chat-window {
+            position: absolute;
+            bottom: 90px;
+            right: 0;
+            width: 400px;
+            height: 650px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.9),
+                        0 0 0 1px rgba(212,175,55,0.1);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .chat-header {
+            background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, rgba(10,10,10,0.95) 100%);
+            padding: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            animation: fadeIn 0.4s ease;
+            font-weight: 400;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.bot {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid rgba(255,255,255,0.05);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            color: #e0e0e0;
+        }
+        
+        .message.user {
+            background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(184,115,51,0.1));
+            border: 1px solid rgba(212,175,55,0.2);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            color: #fff;
+        }
+        
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .quick-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #ccc;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .quick-btn:hover {
+            background: rgba(212,175,55,0.1);
+            border-color: rgba(212,175,55,0.4);
+            color: #d4af37;
+            transform: translateY(-1px);
+        }
+        
+        /* Tarjetas de membresía - Negro brilloso */
+        .membership-card {
+            background: linear-gradient(145deg, rgba(15,15,15,0.9) 0%, rgba(8,8,8,0.95) 100%);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 40px 32px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .membership-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+            transition: left 0.8s;
+        }
+        
+        .membership-card:hover::before {
+            left: 100%;
+        }
+        
+        .membership-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(212,175,55,0.2);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8),
+                        0 0 30px rgba(212,175,55,0.05);
+        }
+        
+        .membership-card.featured {
+            border-color: rgba(212,175,55,0.25);
+            background: linear-gradient(145deg, rgba(20,20,20,0.95) 0%, rgba(10,10,10,0.98) 100%);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9),
+                        inset 0 1px 0 rgba(212,175,55,0.1);
+        }
+        
+        .membership-card.featured::after {
+            content: 'MÁS ELEGIDO';
+            position: absolute;
+            top: 24px;
+            right: -35px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.9), rgba(184,115,51,0.9));
+            color: #000;
+            padding: 6px 40px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transform: rotate(45deg);
+            box-shadow: 0 5px 20px rgba(212,175,55,0.3);
+        }
+        
+        .price-tag {
+            font-size: 42px;
+            font-weight: 300;
+            color: #fff;
+            letter-spacing: -1px;
+        }
+        
+        .price-tag span {
+            font-size: 16px;
+            color: #666;
+            font-weight: 400;
+        }
+        
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            font-size: 13px;
+            color: #999;
+            line-height: 1.5;
+        }
+        
+        .feature-list li::before {
+            content: '—';
+            color: #d4af37;
+            font-weight: 300;
+            flex-shrink: 0;
+        }
+        
+        /* Botones - Negro brilloso */
+        .btn-glossy {
+            background: linear-gradient(145deg, #151515, #0a0a0a);
+            color: #fff;
+            padding: 16px 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.4s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5),
+                        inset 0 1px 0 rgba(255,255,255,0.1);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-glossy::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-glossy:hover::before {
+            left: 100%;
+        }
+        
+        .btn-glossy:hover {
+            border-color: rgba(212,175,55,0.4);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6),
+                        0 0 20px rgba(212,175,55,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .btn-gold {
+            background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(184,115,51,0.1));
+            color: #d4af37;
+            padding: 16px 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(212,175,55,0.3);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-gold:hover {
+            background: linear-gradient(135deg, rgba(212,175,55,0.25), rgba(184,115,51,0.2));
+            box-shadow: 0 10px 30px rgba(212,175,55,0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(212,175,55,0.3);
+            border-radius: 3px;
+        }
+        
+        /* Tipografía sofisticada */
+        .text-elegant {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+        }
+        
+        .text-elegant-bold {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 500;
+        }
+        
+        .text-gold {
+            color: #d4af37;
+        }
+        
+        .text-copper {
+            color: #b87333;
+        }
+        
+        /* Línea divisoria elegante */
+        .divider {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+            margin: 24px auto;
+        }
+        
+        /* Animaciones de entrada */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #888;
+        }
+        
+        /* Navegación */
+        nav {
+            background: rgba(5,5,5,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        
+        /* Sección CTA */
+        .cta-section {
+            background: radial-gradient(circle at center, rgba(20,20,20,0.5) 0%, transparent 70%);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-window {
+                width: calc(100vw - 40px);
+                height: 70vh;
+                right: -20px;
+            }
+            
+            .price-tag {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-stochastic">
+
+    <!-- Canvas para líneas estocásticas -->
+    <canvas id="canvas-network"></canvas>
+    
+    <!-- Efectos de luz -->
+    <div class="glow-sphere glow-1"></div>
+    <div class="glow-sphere glow-2"></div>
+
+    <!-- Navegación -->
+    <nav class="fixed w-full z-50 px-6 py-5">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="text-2xl text-elegant-bold tracking-widest text-white">
+                DECOHERENCE
+            </div>
+            <div class="hidden md:flex gap-10 text-xs font-medium tracking-widest uppercase text-gray-500">
+                <a href="#beneficios" class="hover:text-white transition duration-300">Beneficios</a>
+                <a href="#membresias" class="hover:text-white transition duration-300">Membresías</a>
+                <a href="#metodologia" class="hover:text-white transition duration-300">Metodología</a>
+                <button onclick="toggleChat()" class="text-gold hover:text-white transition duration-300">
+                    Agente Villalobos
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center px-6 pt-20">
+        <div class="max-w-5xl mx-auto text-center z-10">
+            <div class="badge mb-8 fade-in-up">
+                Medicina Estética & Metabólica de Precisión
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl lg:text-8xl text-elegant mb-6 leading-none fade-in-up" style="animation-delay: 0.1s;">
+                Mantén el control<br>
+                <span class="text-gold italic">de tu salud</span><br>
+                <span class="text-4xl md:text-6xl lg:text-7xl">y belleza</span>
+            </h1>
+            
+            <div class="divider fade-in-up" style="animation-delay: 0.2s;"></div>
+            
+            <p class="text-base md:text-lg text-gray-500 mb-12 max-w-2xl mx-auto font-light leading-relaxed fade-in-up" style="animation-delay: 0.3s;">
+                Membresías de seguimiento continuo que combinan ciencia metabólica, 
+                aparatología facial avanzada y nutrición funcional personalizada.
+            </p>
+            
+            <div class="flex flex-col md:flex-row gap-6 justify-center items-center mb-16 fade-in-up" style="animation-delay: 0.4s;">
+                <button onclick="toggleChat()" class="btn-glossy px-10 py-5">
+                    Iniciar Evaluación
+                </button>
+                <button onclick="document.getElementById('membresias').scrollIntoView({behavior: 'smooth'})" 
+                        class="text-xs tracking-widest uppercase text-gray-500 hover:text-white transition border-b border-gray-700 hover:border-white pb-1">
+                    Ver Membresías
+                </button>
+            </div>
+            
+            <!-- Promoción destacada -->
+            <div class="inline-block bg-black/40 border border-white/5 rounded-2xl p-8 backdrop-blur-sm fade-in-up" style="animation-delay: 0.5s;">
+                <div class="text-xs tracking-widest uppercase text-gray-600 mb-3">Inversión diaria</div>
+                <div class="text-5xl text-elegant text-white mb-2">$11.70 <span class="text-lg text-gray-600 font-sans font-normal">MXN</span></div>
+                <div class="text-xs text-gray-600 tracking-wide">Menos que un café. Más que una inversión.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Beneficios -->
+    <section id="beneficios" class="py-32 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-24 fade-in-up">
+                <div class="badge mb-6">Beneficios</div>
+                <h2 class="text-4xl md:text-6xl text-elegant mb-4">Resultados <span class="text-gold italic">medibles</span></h2>
+                <p class="text-gray-600 font-light">Ciencia aplicada a tu transformación</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/5">
+                <div class="bg-[#050505] p-10 border-r border-b border-white/5 hover:bg-[#080808] transition duration-500 fade-in-up">
+                    <div class="text-gold text-3xl mb-6 font-serif">01</div>
+                    <h3 class="text-lg font-medium mb-3 tracking-wide">Pérdida de Grasa Visceral</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed font-light">Reducción medible de tejido adiposo mediante control metabólico preciso y monitoreo de composición corporal.</p>
+                </div>
+                
+                <div class="bg-[#050505] p-10 border-r border-b border-white/5 hover:bg-[#080808] transition duration-500 fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="text-gold text-3xl mb-6 font-serif">02</div>
+                    <h3 class="text-lg font-medium mb-3 tracking-wide">Hipertrofia Muscular</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed font-light">Optimización de síntesis proteica mediante formulaciones personalizadas y protocolos de entrenamiento adaptados.</p>
+                </div>
+                
+                <div class="bg-[#050505] p-10 border-b border-white/5 hover:bg-[#080808] transition duration-500 fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="text-gold text-3xl mb-6 font-serif">03</div>
+                    <h3 class="text-lg font-medium mb-3 tracking-wide">Homeostasis Glucosa</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed font-light">Eliminación de picos de insulina, prevención de resistencia insulínica y estabilización energética continua.</p>
+                </div>
+                
+                <div class="bg-[#050505] p-10 border-r border-white/5 hover:bg-[#080808] transition duration-500 fade-in-up">
+                    <div class="text-gold text-3xl mb-6 font-serif">04</div>
+                    <h3 class="text-lg font-medium mb-3 tracking-wide">Perfil Lipídico Óptimo</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed font-light">Reducción de colesterol LDL y triglicéridos mediante intervención nutricional de precisión.</p>
+                </div>
+                
+                <div class="bg-[#050505] p-10 border-r border-white/5 hover:bg-[#080808] transition duration-500 fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="text-gold text-3xl mb-6 font-serif">05</div>
+                    <h3 class="text-lg font-medium mb-3 tracking-wide">Restructuración Conductual</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed font-light">Modificación de hábitos alimenticios profundos mediante psicología de la conducta y coaching metabólico.</p>
+                </div>
+                
+                <div class="bg-[#050505] p-10 hover:bg-[#080808] transition duration-500 fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="text-gold text-3xl mb-6 font-serif">06</div>
+                    <h3 class="text-lg font-medium mb-3 tracking-wide">Biorevitalización Facial</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed font-light">Estimulación de colágeno y elastina mediante aparatología médica de última generación.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Membresías -->
+    <section id="membresias" class="py-32 px-6 relative z-10 bg-black/20">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-24 fade-in-up">
+                <div class="badge mb-6">Membresías</div>
+                <h2 class="text-4xl md:text-6xl text-elegant mb-4">Planes <span class="text-gold italic">Synthéseis</span></h2>
+                <p class="text-gray-600 font-light">Diseñados para cada nivel de compromiso</p>
+            </div>
+            
+            <div class="grid lg:grid-cols-4 gap-6">
+                <!-- Basic -->
+                <div class="membership-card fade-in-up">
+                    <div class="text-xs tracking-widest uppercase text-gray-600 mb-4">Synthéseis</div>
+                    <h3 class="text-2xl text-elegant-bold mb-2">Basic</h3>
+                    <div class="price-tag mb-1">$350<span>/mes</span></div>
+                    <div class="text-xs text-gray-700 mb-8 tracking-wide">$11.70 diarios</div>
+                    
+                    <ul class="feature-list mb-8">
+                        <li>INSULESTERON 300g</li>
+                        <li>Análisis de Composición Corporal</li>
+                        <li>1 asesoría vía Audiograma</li>
+                        <li>Tarjeta de Miembros (descuentos)</li>
+                        <li>Suero Oral</li>
+                        <li>Plan Metabólico-Conductual</li>
+                        <li>Plan de Alimentación</li>
+                    </ul>
+                    
+                    <button onclick="selectPlan('Basic')" class="w-full btn-glossy py-4 text-xs">
+                        Seleccionar
+                    </button>
+                </div>
+                
+                <!-- Unique -->
+                <div class="membership-card fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="text-xs tracking-widest uppercase text-gray-600 mb-4">Synthéseis</div>
+                    <h3 class="text-2xl text-elegant-bold mb-2">Unique</h3>
+                    <div class="price-tag mb-1">$650<span>/mes</span></div>
+                    <div class="text-xs text-gray-700 mb-8 tracking-wide">Incluye formulación</div>
+                    
+                    <ul class="feature-list mb-8">
+                        <li>Formulación personalizada</li>
+                        <li>1 Sesión de Aparatología Facial</li>
+                        <li>Análisis de Composición Corporal</li>
+                        <li>2 asesorías vía Audiograma</li>
+                        <li>Calculadoras y Test</li>
+                        <li>Sitio Web de Seguimiento</li>
+                        <li>Todos los beneficios Basic</li>
+                    </ul>
+                    
+                    <button onclick="selectPlan('Unique')" class="w-full btn-glossy py-4 text-xs">
+                        Seleccionar
+                    </button>
+                </div>
+                
+                <!-- DX Básico -->
+                <div class="membership-card featured fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="text-xs tracking-widest uppercase text-gold mb-4">DX Series</div>
+                    <h3 class="text-2xl text-elegant-bold mb-2">Básico</h3>
+                    <div class="price-tag mb-1 text-gold">$750<span>/mes</span></div>
+                    <div class="text-xs text-gray-700 mb-8 tracking-wide">3 sesiones faciales incluidas</div>
+                    
+                    <ul class="feature-list mb-8">
+                        <li>INSULESTERON completo</li>
+                        <li>3 Sesiones de Aparatología Facial</li>
+                        <li>Drenaje linfático + Back Facial</li>
+                        <li>Asesorías semanales vía Audiograma</li>
+                        <li>Calculadoras, Test y Seguimiento Web</li>
+                        <li>Tarjeta de Miembros + Suero Oral</li>
+                        <li>Plan Metabólico-Conductual completo</li>
+                    </ul>
+                    
+                    <button onclick="selectPlan('DX Básico')" class="w-full btn-gold py-4 text-xs">
+                        Elegir DX Básico
+                    </button>
+                </div>
+                
+                <!-- DX Premium -->
+                <div class="membership-card fade-in-up" style="animation-delay: 0.3s;">
+                    <div class="text-xs tracking-widest uppercase text-gray-600 mb-4">DX Series</div>
+                    <h3 class="text-2xl text-elegant-bold mb-2">Premium</h3>
+                    <div class="price-tag mb-1">$1200<span>/mes</span></div>
+                    <div class="text-xs text-gray-700 mb-8 tracking-wide">Experiencia completa</div>
+                    
+                    <ul class="feature-list mb-8">
+                        <li>Formulación Personalizada avanzada</li>
+                        <li>4 Sesiones faciales transferibles</li>
+                        <li>Radiofrecuencia, Ultrasonido, Alta frecuencia</li>
+                        <li>Hidrodermoabrasión + Masajes</li>
+                        <li>1 sesión Estimulación Capilar</li>
+                        <li>Dieta personalizada + Análisis</li>
+                        <li>Todos los beneficios DX Básico</li>
+                    </ul>
+                    
+                    <button onclick="selectPlan('DX Premium')" class="w-full btn-glossy py-4 text-xs">
+                        Seleccionar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Metodología -->
+    <section id="metodologia" class="py-32 px-6 relative z-10">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-20 items-center">
+                <div class="fade-in-up">
+                    <div class="badge mb-6">Proceso</div>
+                    <h2 class="text-4xl md:text-5xl text-elegant mb-8">
+                        Metodología <span class="text-gold italic">Decoherence</span>
+                    </h2>
+                    <p class="text-gray-500 font-light leading-relaxed mb-12">
+                        Un sistema integral basado en datos biométricos y ciencia metabolica 
+                        avanzada para transformar tu fisiología de manera sostenible y medible.
+                    </p>
+                    
+                    <div class="space-y-8">
+                        <div class="flex gap-6">
+                            <div class="text-gold text-elegant text-3xl font-light">I</div>
+                            <div>
+                                <h4 class="text-lg font-medium mb-2 tracking-wide">Evaluación Biométrica</h4>
+                                <p class="text-gray-600 text-sm font-light leading-relaxed">Análisis de composición corporal multicompartmental y estudios metabólicos específicos.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-6">
+                            <div class="text-gold text-elegant text-3xl font-light">II</div>
+                            <div>
+                                <h4 class="text-lg font-medium mb-2 tracking-wide">Formulación Molecular</h4>
+                                <p class="text-gray-600 text-sm font-light leading-relaxed">INSULESTERON y nutracéuticos adaptados a tu biología única y objetivos específicos.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-6">
+                            <div class="text-gold text-elegant text-3xl font-light">III</div>
+                            <div>
+                                <h4 class="text-lg font-medium mb-2 tracking-wide">Intervención Facial</h4>
+                                <p class="text-gray-600 text-sm font-light leading-relaxed">Protocolos de aparatología médica-estética con tecnología de punta.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-6">
+                            <div class="text-gold text-elegant text-3xl font-light">IV</div>
+                            <div>
+                                <h4 class="text-lg font-medium mb-2 tracking-wide">Optimización Continua</h4>
+                                <p class="text-gray-600 text-sm font-light leading-relaxed">Seguimiento semanal y ajustes dinámicos basados en respuesta biológica.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative fade-in-up">
+                    <div class="aspect-[4/5] rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/5 p-12 flex flex-col justify-center items-center text-center">
+                        <div class="text-6xl text-gold font-serif mb-6">97%</div>
+                        <div class="text-elegant text-2xl mb-4">Eficacia comprobada</div>
+                        <div class="text-gray-600 text-sm font-light leading-relaxed max-w-xs">
+                            de nuestros miembros reportan mejoras significativas en energía, 
+                            composición corporal y bienestar general dentro del primer mes.
+                        </div>
+                        <div class="mt-12 pt-12 border-t border-white/5 w-full">
+                            <div class="text-xs tracking-widest uppercase text-gray-700 mb-2">Tiempo promedio</div>
+                            <div class="text-elegant text-3xl">21 días</div>
+                            <div class="text-gray-600 text-xs mt-1">para resultados visibles</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="cta-section py-32 px-6 relative z-10">
+        <div class="max-w-4xl mx-auto text-center fade-in-up">
+            <div class="badge mb-8">Comienza hoy</div>
+            <h2 class="text-4xl md:text-6xl lg:text-7xl text-elegant mb-8 leading-tight">
+                Tu transformación<br>
+                <span class="text-gold italic">es inevitable</span>
+            </h2>
+            <p class="text-gray-500 font-light mb-12 max-w-xl mx-auto">
+                Permíteme evaluar tu perfil metabólico y recomendarte el protocolo 
+                exacto que tu cuerpo necesita.
+            </p>
+            <button onclick="toggleChat()" class="btn-gold px-12 py-5 text-sm">
+                Consultar con Agente Villalobos
+            </button>
+            <p class="mt-8 text-xs text-gray-700 tracking-widest uppercase">Respuesta inmediata • Asesoría personalizada</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-16 px-6 border-t border-white/5 relative z-10 bg-black/40">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="text-2xl text-elegant-bold tracking-widest">DECOHERENCE</div>
+            <div class="text-gray-700 text-xs tracking-widest uppercase">
+                © 2024 Decoherence Health. Todos los derechos reservados.
+            </div>
+            <div class="flex gap-8 text-xs tracking-widest uppercase text-gray-600">
+                <a href="#" class="hover:text-gold transition duration-300">Privacidad</a>
+                <a href="#" class="hover:text-gold transition duration-300">Términos</a>
+                <a href="#" class="hover:text-gold transition duration-300">Contacto</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chatbot Widget -->
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-black border border-gold/30 flex items-center justify-center text-xl shadow-lg">
+                        <span class="text-gold">V</span>
+                    </div>
+                    <div>
+                        <div class="font-serif text-lg tracking-wide">Agente Villalobos</div>
+                        <div class="text-xs text-gold/80 flex items-center gap-2 uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 bg-gold rounded-full animate-pulse"></span>
+                            Especialista en Metabolismo
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-body" id="chatBody">
+                <!-- Mensajes dinámicos -->
+            </div>
+        </div>
+        
+        <button class="chat-button" onclick="toggleChat()" id="chatButton">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gold">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Canvas Network - Líneas estocásticas
+        const canvas = document.getElementById('canvas-network');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        let mouse = { x: null, y: null };
+        
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        
+        window.addEventListener('resize', resize);
+        resize();
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+                
+                // Movimiento estocástico adicional
+                if (Math.random() < 0.02) {
+                    this.vx += (Math.random() - 0.5) * 0.2;
+                    this.vy += (Math.random() - 0.5) * 0.2;
+                }
+            }
+            
+            draw() {
+                ctx.fillStyle = 'rgba(212, 175, 55, 0.3)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function init() {
+            particles = [];
+            const numParticles = Math.min(window.innerWidth / 10, 100);
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+                
+                // Conectar partículas cercanas
+                particles.forEach(other => {
+                    const dx = particle.x - other.x;
+                    const dy = particle.y - other.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(212, 175, 55, ${0.1 * (1 - distance / 150)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particle.x, particle.y);
+                        ctx.lineTo(other.x, other.y);
+                        ctx.stroke();
+                    }
+                });
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        init();
+        animate();
+        
+        // Intersection Observer
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+        
+        // Chatbot Logic
+        let chatOpen = false;
+        let currentStep = 0;
+        let userData = {};
+        let autoOpenTimer = null;
+        
+        // Auto-abrir después de 20 segundos
+        setTimeout(() => {
+            if (!chatOpen) {
+                toggleChat();
+                showNotification();
+            }
+        }, 20000);
+        
+        function showNotification() {
+            const btn = document.getElementById('chatButton');
+            const notification = document.createElement('div');
+            notification.className = 'absolute -top-12 right-0 bg-gold text-black text-xs px-4 py-2 rounded-full whitespace-nowrap animate-bounce';
+            notification.textContent = '¿Tienes preguntas?';
+            btn.style.position = 'relative';
+            btn.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 5000);
+        }
+        
+        const conversationFlow = [
+            {
+                message: "Buenas tardes. Soy el Agente Villalobos, especialista en metabolismo y composición corporal de Decoherence. He estado analizando tu perfil y detecto que podrías beneficiarte de nuestros protocolos de optimización metabólica. ¿Me permites hacerte algunas preguntas para determinar qué membresía se ajusta a tus objetivos específicos?",
+                options: ["Por supuesto", "En otro momento"]
+            },
+            {
+                message: "Excelente. Comencemos con lo fundamental: ¿Has experimentado frustración con dietas convencionales que prometen resultados pero no logran mantener tu composición corporal a largo plazo?",
+                options: ["Sí, repetidamente", "Alguna vez", "No he intentado"]
+            },
+            {
+                message: "Entiendo. Eso sugiere un desajuste metabólico que requiere intervención de precisión. ¿Experimentas caídas de energía postprandiales o antojos intensos de carbohidratos refinados durante la tarde?",
+                options: ["Diariamente", "Frecuentemente", "Raramente"]
+            },
+            {
+                message: "Esos son indicadores claros de inestabilidad glucémica. ¿Tu objetivo principal se centra exclusivamente en la estética corporal o buscas una transformación integral que incluya marcadores de salud metabólica (lípidos, inflamación, sensibilidad insulínica)?",
+                options: ["Solo estética", "Salud integral", "Ambos por igual"]
+            },
+            {
+                message: "Una visión completa. Respecto a la estética facial: ¿El envejecimiento cutáneo, pérdida de tonicidad o calidad de piel son preocupaciones que te gustaría abordar simultáneamente con tu protocolo metabólico?",
+                options: ["Definitivamente", "No es prioridad", "Quizás después"]
+            },
+            {
+                message: "Basado en tu perfil, recomiendo nuestra membresía DX Básico. Incluye INSULESTERON personalizado, tres sesiones mensuales de aparatología facial médica, análisis de composición corporal y asesorías semanales directamente conmigo. Todo por $750 mensuales — menos de lo que gastas probablemente en café y comidas improvisadas. ¿Te gustaría conocer los detalles específicos de este protocolo?",
+                options: ["Sí, explícame todo", "Es muy costoso", "Quiero la Premium"]
+            },
+            {
+                message: "Perfecto. Considera esto: estás invirtiendo $25 pesos diarios en tu fisiología. Eso incluye formulación molecular personalizada, tecnología facial de última generación, y acceso directo a asesoría especializada. ¿Prefieres agendar tu evaluación biométrica inicial esta semana o la siguiente?",
+                options: ["Esta semana", "La siguiente", "Necesito pensarlo"]
+            }
+        ];
+        
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatButton = document.getElementById('chatButton');
+            
+            chatOpen = !chatOpen;
+            
+            if (chatOpen) {
+                chatWindow.style.display = 'flex';
+                chatButton.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gold"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                if (currentStep === 0 && document.getElementById('chatBody').children.length === 0) {
+                    setTimeout(() => showBotMessage(0), 600);
+                }
+            } else {
+                chatWindow.style.display = 'none';
+                chatButton.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gold"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>';
+            }
+        }
+        
+        function showBotMessage(step) {
+            const chatBody = document.getElementById('chatBody');
+            const stepData = conversationFlow[step];
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = stepData.message;
+            chatBody.appendChild(messageDiv);
+            
+            if (stepData.options) {
+                const quickReplies = document.createElement('div');
+                quickReplies.className = 'quick-replies';
+                stepData.options.forEach(option => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quick-btn';
+                    btn.textContent = option;
+                    btn.onclick = () => handleUserResponse(option, step);
+                    quickReplies.appendChild(btn);
+                });
+                chatBody.appendChild(quickReplies);
+            }
+            
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        function handleUserResponse(response, step) {
+            const chatBody = document.getElementById('chatBody');
+            
+            const oldButtons = chatBody.querySelectorAll('.quick-replies');
+            oldButtons.forEach(btn => btn.remove());
+            
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user';
+            userDiv.textContent = response;
+            chatBody.appendChild(userDiv);
+            
+            if (conversationFlow[step].key) {
+                userData[conversationFlow[step].key] = response;
+            }
+            
+            currentStep++;
+            
+            setTimeout(() => {
+                if (currentStep < conversationFlow.length) {
+                    showBotMessage(currentStep);
+                } else {
+                    const finalDiv = document.createElement('div');
+                    finalDiv.className = 'message bot';
+                    finalDiv.innerHTML = `Excelente decisión. Estoy preparando tu expediente preliminar.<br><br><strong>Resumen de perfil:</strong><br>• Objetivo: ${userData.primary_goal || 'No especificado'}<br>• Interés facial: ${userData.facial_interest || 'No especificado'}<br><br>Un asesor de membresías se pondrá en contacto contigo en los próximos 5 minutos para confirmar tu evaluación biométrica gratuita.<br><br>¿Prefieres que te contactemos vía WhatsApp o correo electrónico?`;
+                    
+                    const finalOptions = document.createElement('div');
+                    finalOptions.className = 'quick-replies';
+                    ['WhatsApp', 'Correo', 'Llamada'].forEach(opt => {
+                        const btn = document.createElement('button');
+                        btn.className = 'quick-btn';
+                        btn.textContent = opt;
+                        btn.onclick = () => {
+                            const thanks = document.createElement('div');
+                            thanks.className = 'message bot';
+                            thanks.innerHTML = 'Registrado. Bienvenido a Decoherence. Tu transformación comienza ahora.<br><br>Mientras tanto, te invito a revisar las especificaciones técnicas de nuestras membresías en la sección superior.';
+                            chatBody.appendChild(thanks);
+                            chatBody.scrollTop = chatBody.scrollHeight;
+                        };
+                        finalOptions.appendChild(btn);
+                    });
+                    
+                    chatBody.appendChild(finalDiv);
+                    chatBody.appendChild(finalOptions);
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }
+            }, 1000);
+        }
+        
+        function selectPlan(planName) {
+            toggleChat();
+            setTimeout(() => {
+                const chatBody = document.getElementById('chatBody');
+                chatBody.innerHTML = '';
+                currentStep = 99;
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot';
+                messageDiv.innerHTML = `Has seleccionado el plan <strong class="text-gold">${planName}</strong>.<br><br>Esta es una elección estratégica. Permíteme verificar la disponibilidad de horarios para tu evaluación inicial...<br><br>Tenemos espacio esta semana. ¿Prefieres el horario matutino (8:00-12:00) o vespertino (16:00-20:00)?`;
+                chatBody.appendChild(messageDiv);
+                
+                const quickReplies = document.createElement('div');
+                quickReplies.className = 'quick-replies';
+                ['Matutino', 'Vespertino', 'Ver otros planes'].forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quick-btn';
+                    btn.textContent = opt;
+                    btn.onclick = function() {
+                        const userDiv = document.createElement('div');
+                        userDiv.className = 'message user';
+                        userDiv.textContent = opt;
+                        chatBody.appendChild(userDiv);
+                        
+                        setTimeout(() => {
+                            const responseDiv = document.createElement('div');
+                            responseDiv.className = 'message bot';
+                            if (opt === 'Ver otros planes') {
+                                responseDiv.innerHTML = 'Por supuesto. Permíteme mostrarte la matriz comparativa completa:<br><br><strong>Basic ($350):</strong> Entry point, ideal para protocolos metabólicos puros.<br><strong>Unique ($650):</strong> Balance costo-beneficio con 1 sesión facial.<br><strong>DX Básico ($750):</strong> Nuestro plan estrella. Máximo valor por inversión.<br><strong>DX Premium ($1200):</strong> Experiencia white-glove con transferibilidad de sesiones.<br><br>¿Cuál se alinea mejor con tu presupuesto mensual?';
+                            } else {
+                                responseDiv.innerHTML = `Perfecto. Horario ${opt.toLowerCase()} registrado.<br><br>Para confirmar tu membresía ${planName}, necesito tu número de contacto. Un asesor enviará los detalles de pago y tu kit de bienvenida digital.<br><br><input type="tel" placeholder="WhatsApp (10 dígitos)" style="background:rgba(255,255,255,0.05);border:1px solid rgba(212,175,55,0.3);padding:12px;border-radius:8px;color:white;width:100%;margin-top:12px;font-size:13px;" onkeypress="if(event.key===\'Enter\'){this.parentElement.innerHTML=\'✓ Datos recibidos. Bienvenido a la élite de Decoherence.\'}">`;
+                            }
+                            chatBody.appendChild(responseDiv);
+                            chatBody.scrollTop = chatBody.scrollHeight;
+                        }, 800);
+                    };
+                    quickReplies.appendChild(btn);
+                });
+                chatBody.appendChild(quickReplies);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 800);
+        }
+        
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
